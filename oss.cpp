@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <cstdlib>
+
 int main(int argc, char **argv) {
 
 	// sets default of n, s, and t to 1 if value not given
@@ -14,20 +16,24 @@ int main(int argc, char **argv) {
 	// getopt(3) to parse options
 	while ((opt = getopt(argc, argv, "hn:s:t:")) != -1) {
 		switch (opt) {
+			// outputs a help message explaining how to run then exits
 			case 'h':
-				// outputs a help message explaining how to run then exit
+				cout << "To run: ./oss -n # -s # -t #"
 				break;
+			// number of total child processes
 			case 'n':
 				// convert and store the value
-				// number of total child processes
+				int n = atoi(argv[2]);
 				break;
+			// number of allowed simultaneous child processes being run
 			case 's':
 				// convert and store the value
-				// number of allowed simultaneous child processes being run
+				int s = atoi(argv[4]);
 				break;
+			// number of iterations completed for each child process
 			case 't':
 				// convert and store the value
-				// number of iterations completed for each child process
+				int t = atoi(argv[6]);
 				break;
 		}
 	}
