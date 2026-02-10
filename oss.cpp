@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 	int opt;
 	// accumulator to track current child processes being completed, set at 0
 	int current = 0;
-	// accumulator to track the total number of completed child processes, set at 0
+	// accumulator to track the total number of child processes launched, set at 0
 	int total = 0;
 
 	// getopt(3) parses options
@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 			// outputs a help message explaining how to run the program, then exits
 			case 'h':
 				std::cout << "To run: ./oss -n # -s # -t #";
-				exit(1);
+				exit(0);
 				break;
 			// number of total child processes
 			case 'n':
@@ -75,18 +75,22 @@ int main(int argc, char **argv) {
 	while (current < s && total < n) {
 		// forks the parent process, assigns pid to childPid
 		pid_t childPid = fork();
+		// create character array
+		char t_string[10];
+		// convert t into a string (t_string)
+		sprintf(t_string, "%d", t);
 		// if childPid is equal to 0 (confirms this is the child process)
 		if (childPid == 0) {
 			// child launches exec
-			execl("./user", "user", t,  NULL);
+			execl("./user", "user", t_string, NULL);
 		}
 		// if childPid is greater than 0 (confirms this is the parent process)
 		else if (childPid > 0) {
 			// shows output of new child being launched
-			std::cout << "New child launched";
+			std::cout << "New child launched\n";
 			// increments the current number of child processes running
 			current++;
-			// increments the total number of completed child processes
+			// increments the total number of child processes launched
 			total++;
 		}
 		// if the childPid is < 0, there has been an error - print message
@@ -97,16 +101,25 @@ int main(int argc, char **argv) {
 	
 	// while loop keeps system full until launched all required children
 	while (total < n) {
-	 	wait();
+	 	wait(0);
 	 	current--;
 	 	pid_t childPid = fork();
+		// create character array
+		char t_string[10];
+		// convert t into a string (t_string)
+		sprintf(t_string, "%d", t);
+		// if childPid is equal to 0 (confirms this is the child process)
 		if (childPid == 0) {
-			std::cout << "New child launched";
-			// 
-			execl("./user", "user", t, NULL);
+			// child launches exec
+			execl("./user", "user", t_string, NULL);
 		}
+		// if childPid is greater than 0 (confirms this is the parent process)
 		else if (childPid > 0) {
+			// shows output of new child being launched
+			std::cout << "New child launched\n";
+			// increments the current number of child processes running
 			current++;
+			// increments the total number of child processes launched
 			total++;
 		}
 		else {
@@ -117,7 +130,7 @@ int main(int argc, char **argv) {
 	
 	// while loop 
 	while (current > 0) {
-		wait();
+		wait(0);
 		current--;
 	}
 
