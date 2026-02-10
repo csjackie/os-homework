@@ -1,64 +1,97 @@
 #include <iostream>
 #include <unistd.h>
-#include <stdio.h>
+#include <sys/wait.h>
 #include <cstdlib>
+#include <stdio.h>
+
+/*
+ * This function accepts 
+ *
+*/
+
 
 int main(int argc, char **argv) {
-
+	
 	// sets default of n, s, and t to 1 if value not given
         int n = 1;
 	int s = 1;
 	int t = 1;
+	// initializing opt
 	int opt;
+	// accumulator to track current child processes being completed, set at 0
 	int current = 0;
+	// accumulator to track the total number of completed child processes, set at 0
 	int total = 0;
 
-	// getopt(3) to parse options
+	// getopt(3) parses options
 	while ((opt = getopt(argc, argv, "hn:s:t:")) != -1) {
 		switch (opt) {
-			// outputs a help message explaining how to run then exits
+			// outputs a help message explaining how to run the program, then exits
 			case 'h':
-				std::cout << "To run: ./oss -n # -s # -t #"
-				exit()
+				std::cout << "To run: ./oss -n # -s # -t #";
+				exit(1);
 				break;
 			// number of total child processes
 			case 'n':
+				// converts the string input for n to int and assigns it to n
 				n = atoi(optarg);
 				break;
-			// number of allowed simultaneous child processes being run
+			// number of allowed simultaneous child processes running at one time
 			case 's':
+				// converts the string input for s to int and assigns it to s
 				s = atoi(optarg);
 				break;
-			// number of iterations completed for each child process
+			// number of iterations for each child process
 			case 't':
+				// converts the string input for t to int and assigns it to t
 				t = atoi(optarg);
 				break;
 		}
 	}
 
-	// validate values are correctly entered
-	if (n > 100 || n <= 0) {
-		std::cer << "Invalid value for n\n";
+	// prints error message and exits program if the value of n, s, or t are out of range
+	if (n <= 0 || n > 100) {
+		std::cout << "Invalid value for n\n";
 		exit(1);
 	}
-	if (s > 15 || s <= 0) {
-		std::cer <<
-		exit(1)}
+
+	if (s <= 0 || s > 15) {
+		std::cout << "Invalid value for s\n";
+		exit(1);
+	}
+
 	if (t <= 0){
-		exit(1)}
+		std::cout << "Invalid value for t\n";
+		exit(1);
+	}
+
 	if (s > n){
-		exit(1)}
+		exit(1);
+	}
 	
-	// while loop to track that the amount of simultaneous child processes is being met
-	while (current < s) {
-		pid_t pid = fork();
-		if (pid == 0) {
-			std::cout << "New child launched";
-			exec("./user", "user", t_string,(char *) NULL);
+	// while loop keeps track to ensure the number of current running child processes are less than 
+	// the allowed simultaneous number of processes, and that the total number of processes completed
+	// is less than the number of total child processes needed
+	while (current < s && total < n) {
+		// forks the parent process, assigns pid to childPid
+		pid_t childPid = fork();
+		// if childPid is equal to 0 (confirms this is the child process)
+		if (childPid == 0) {
+			// child launches exec
+			execl("./user", "user", t,  NULL);
 		}
-		else {
+		// if childPid is greater than 0 (confirms this is the parent process)
+		else if (childPid > 0) {
+			// shows output of new child being launched
+			std::cout << "New child launched";
+			// increments the current number of child processes running
 			current++;
+			// increments the total number of completed child processes
 			total++;
+		}
+		// if the childPid is < 0, there has been an error - print message
+		else {
+			std::cout << "Error! Fork failed.";
 		}
 	}
 	
@@ -66,16 +99,26 @@ int main(int argc, char **argv) {
 	while (total < n) {
 	 	wait();
 	 	current--;
-	 	pid_t pid = fork();
-		if (pid == 0) {
+	 	pid_t childPid = fork();
+		if (childPid == 0) {
 			std::cout << "New child launched";
-			exec("./user", "user", t_string,(char *) NULL);
+			// 
+			execl("./user", "user", t, NULL);
 		}
-		else {
+		else if (childPid > 0) {
 			current++;
 			total++;
 		}
+		else {
+			std::cout << "Error! Fork failed.";
+			}
 
+	}
+	
+	// while loop 
+	while (current > 0) {
+		wait();
+		current--;
 	}
 
 	return 0;
