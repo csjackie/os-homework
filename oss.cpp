@@ -5,11 +5,24 @@
 #include <stdio.h>
 
 /*
- * This function accepts 
+ * This function allows the user to enter the number of total child processes (n),
+ * the number of allowed simultaneous processes to be running at one time (s),
+ * and the number of total iterations per child process (t). If user enters "-h", 
+ * a message is displayed to show user how to run the program.
  *
-*/
-
-
+ * The program then parses through the options and converts each to an integer. 
+ * The values of n, s, and t are validated, and program exits if the values are
+ * outside the required parameters.
+ *
+ * The program starts a while loop that launches as many children as allowed, making 
+ * sure the simultaneous limit is being reached, while also ensuring the number of
+ * needed child processes isn't exceeding the total of child processes launched.
+ * Once finished, another while loop waits for one child to finish, and then launches
+ * a replacement. This while loop continues until the total of child processes
+ * launched reaches the total number of child processes needed. After the while loop
+ * completes, the last while loop checks to see if the current running child processes 
+ * is greater than 0. If so, the loop waits until all the children are gone.
+ */
 int main(int argc, char **argv) {
 	
 	// sets default of n, s, and t to 1 if value not given
@@ -28,7 +41,8 @@ int main(int argc, char **argv) {
 		switch (opt) {
 			// outputs a help message explaining how to run the program, then exits
 			case 'h':
-				std::cout << "To run: ./oss -n # -s # -t #";
+				std::cout << "To run program:\n\t ./oss -n # -s # -t #\n";
+				std::cout << "Replace # with an integer.\n";
 				exit(0);
 				break;
 			// number of total child processes
@@ -69,9 +83,9 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 	
-	// while loop keeps track to ensure the number of current running child processes are less than 
-	// the allowed simultaneous number of processes, and that the total number of processes completed
-	// is less than the number of total child processes needed
+	// while loop launches as many child processes as it can, ensuring the number of current running 
+	// child processes are less than the allowed simultaneous number of processes, and that the total 
+	// number of processes complete is less than the number of total child processes needed
 	while (current < s && total < n) {
 		// forks the parent process, assigns pid to childPid
 		pid_t childPid = fork();
@@ -95,14 +109,18 @@ int main(int argc, char **argv) {
 		}
 		// if the childPid is < 0, there has been an error - print message
 		else {
-			std::cout << "Error! Fork failed.";
+			std::cout << "Error! Fork failed.\n";
 		}
 	}
 	
-	// while loop keeps system full until launched all required children
+	// while loop keeps system full until launched all required children. Waits for one child to 
+	// finish, and then launches a replacement.
 	while (total < n) {
-	 	wait(0);
+	 	// child finishes
+		wait(0);
+		// decrements current 
 	 	current--;
+		// forks the parent process, assigns pid to childPid
 	 	pid_t childPid = fork();
 		// create character array
 		char t_string[10];
@@ -122,15 +140,19 @@ int main(int argc, char **argv) {
 			// increments the total number of child processes launched
 			total++;
 		}
+		// if childPid is less than 0
 		else {
-			std::cout << "Error! Fork failed.";
+			// display an error message
+			std::cout << "Error! Fork failed.\n";
 			}
 
 	}
 	
-	// while loop 
+	// while loop waits until each child has finished, decrementing current after each one leaves.
 	while (current > 0) {
+		// child finishes
 		wait(0);
+		// decrements current
 		current--;
 	}
 
