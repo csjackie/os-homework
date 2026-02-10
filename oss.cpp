@@ -23,17 +23,14 @@ int main(int argc, char **argv) {
 				break;
 			// number of total child processes
 			case 'n':
-				// convert and store the value
 				n = atoi(optarg);
 				break;
 			// number of allowed simultaneous child processes being run
 			case 's':
-				// convert and store the value
 				s = atoi(optarg);
 				break;
 			// number of iterations completed for each child process
 			case 't':
-				// convert and store the value
 				t = atoi(optarg);
 				break;
 		}
@@ -53,18 +50,33 @@ int main(int argc, char **argv) {
 		exit(1)}
 	
 	// while loop to track that the amount of simultaneous child processes is being met
-	//while (current < s) {
-		//fork();
-		//cout << "New child launched";
-		//exec("./user", "user", t, NULL)
-	//}
+	while (current < s) {
+		pid_t pid = fork();
+		if (pid == 0) {
+			std::cout << "New child launched";
+			exec("./user", "user", t_string,(char *) NULL);
+		}
+		else {
+			current++;
+			total++;
+		}
+	}
 	
 	// while loop keeps system full until launched all required children
-	// while (total < n) {
-	// 	wait();
-	// 	fork();
-	// 	total++;}
-	
+	while (total < n) {
+	 	wait();
+	 	current--;
+	 	pid_t pid = fork();
+		if (pid == 0) {
+			std::cout << "New child launched";
+			exec("./user", "user", t_string,(char *) NULL);
+		}
+		else {
+			current++;
+			total++;
+		}
+
+	}
 
 	return 0;
 }
